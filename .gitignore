@@ -84,3 +84,4 @@ __pycache__/
 ._*
 .Trashes
 *.swp
+/ChatAppBackend/appsettings.json

@@ -44,6 +44,12 @@ packages/
 package-lock.json
 yarn.lock
 
+appsettings.json
+appsettings.Development.json
+secrets.json
+.env
+
+
 # Docker ve konteyner dosyaları
 docker-compose.override.yml
 *.dockerfile

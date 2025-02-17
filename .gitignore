@@ -1,0 +1,84 @@
+# Visual Studio ve Rider ile ilgili dosyalar
+.vs/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln.docstates
+*.user
+*.rsuser
+*.sln.cache
+
+# Bin ve obj klasörleri (Derlenmiş dosyalar)
+bin/
+obj/
+
+# Publish çıktıları
+out/
+publish/
+AppPackages/
+node_modules/
+bower_components/
+
+# Log ve hata kayıt dosyaları
+logs/
+*.log
+*.tlog
+
+# Debug ve çalışma zamanı dosyaları
+*.pdb
+*.ilk
+*.ipch
+*.cache
+*.csproj.user
+*.suo
+*.tmp
+*.dbmdl
+*.jfm
+
+# Paketler (NuGet ve Yarn gibi)
+!nuget.config
+*.nupkg
+*.snupkg
+packages/
+package-lock.json
+yarn.lock
+
+# Docker ve konteyner dosyaları
+docker-compose.override.yml
+*.dockerfile
+
+# Secret ve config dosyaları
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+.env
+
+# Rider ve Resharper dosyaları
+.idea/
+*.dotSettings.user
+*.dotCover
+*.ReSharper
+
+# Test Sonuçları ve Coverlet gibi test araçları
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Python, Jupyter Notebook (Eğer projede kullanıyorsan)
+*.ipynb_checkpoints
+__pycache__/
+*.pyc
+
+# SQL Server local veritabanı dosyaları
+*.mdf
+*.ldf
+
+# Linux/MacOS sistem dosyaları
+.DS_Store
+._*
+.Trashes
+*.swp
+
+Migrations/

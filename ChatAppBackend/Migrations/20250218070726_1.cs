@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ChatAppBackend.Migrations
 {
     /// <inheritdoc />
-    public partial class chatmessage : Migration
+    public partial class _1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,9 +30,12 @@ namespace ChatAppBackend.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Firstname = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Lastname = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProfileImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Chats = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    isOnline = table.Column<bool>(type: "bit", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -61,11 +64,32 @@ namespace ChatAppBackend.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Creator_Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Members = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Create_Date = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Create_Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    isPublic = table.Column<bool>(type: "bit", nullable: false),
+                    Messages = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    unreadMessageCount = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Chats", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Messages",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Chat_Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Sender_Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MessageType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    File_Url = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Send_Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Receive_Date = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Messages", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -174,30 +198,6 @@ namespace ChatAppBackend.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Messages",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Chat_Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Sender_Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MessageType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    File_Url = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Send_Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Receive_Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    AppChatId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Messages", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Messages_Chats_AppChatId",
-                        column: x => x.AppChatId,
-                        principalTable: "Chats",
-                        principalColumn: "Id");
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -236,42 +236,37 @@ namespace ChatAppBackend.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Messages_AppChatId",
-                table: "Messages",
-                column: "AppChatId");
         }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "AspNetRoleClaims");
+        ///// <inheritdoc />
+        //protected override void Down(MigrationBuilder migrationBuilder)
+        //{
+        //    migrationBuilder.DropTable(
+        //        name: "AspNetRoleClaims");
 
-            migrationBuilder.DropTable(
-                name: "AspNetUserClaims");
+        //    migrationBuilder.DropTable(
+        //        name: "AspNetUserClaims");
 
-            migrationBuilder.DropTable(
-                name: "AspNetUserLogins");
+        //    migrationBuilder.DropTable(
+        //        name: "AspNetUserLogins");
 
-            migrationBuilder.DropTable(
-                name: "AspNetUserRoles");
+        //    migrationBuilder.DropTable(
+        //        name: "AspNetUserRoles");
 
-            migrationBuilder.DropTable(
-                name: "AspNetUserTokens");
+        //    migrationBuilder.DropTable(
+        //        name: "AspNetUserTokens");
 
-            migrationBuilder.DropTable(
-                name: "Messages");
+        //    migrationBuilder.DropTable(
+        //        name: "Chats");
 
-            migrationBuilder.DropTable(
-                name: "AspNetRoles");
+        //    migrationBuilder.DropTable(
+        //        name: "Messages");
 
-            migrationBuilder.DropTable(
-                name: "AspNetUsers");
+        //    migrationBuilder.DropTable(
+        //        name: "AspNetRoles");
 
-            migrationBuilder.DropTable(
-                name: "Chats");
-        }
+        //    migrationBuilder.DropTable(
+        //        name: "AspNetUsers");
+        //}
     }
 }

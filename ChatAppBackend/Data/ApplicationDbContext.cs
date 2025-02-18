@@ -11,9 +11,17 @@ namespace ChatAppBackend.Data
     {
         public DbSet<AppChat> Chats { get; set; }
         public DbSet<AppMessage> Messages { get; set; }
+        public DbSet<AppUserChat> UserChat { get; set; }
 
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<AppUserChat>().HasNoKey();
         }
 
     }

@@ -14,7 +14,7 @@ namespace ChatAppBackend.Controllers
 
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public class ChatController(IHubContext<ChatHub> hubContext, IChatRepository chatRepository, IUserRepository userRepository) : ControllerBase
+    public class ChatController(IHubContext<ChatHub> hubContext, IChatRepository chatRepository, IUserRepository userRepository, IUserChatRepository userChatRepository) : ControllerBase
     {
 
         [HttpPost]
@@ -27,65 +27,63 @@ namespace ChatAppBackend.Controllers
                 Creator_Id = createChatDto.CreatorId,
                 isPublic = createChatDto.isPublic
             };
-            AppUser? user = await userRepository.GetUserByIdAsync(createChatDto.CreatorId);
-            if(user == null)
-            {
-                return BadRequest(new { Message = "User not found!" });
-            }
-            chat.Members.Add(createChatDto.CreatorId);
-            foreach (var member in createChatDto.members)
-            {
-                chat.Members.Add(member);
-            }
+
             AppChat createdChat = await chatRepository.CreateChatAsync(chat);
 
-            foreach (var member in createdChat.Members)
+            foreach (var member in createChatDto.members)
             {
-                await userRepository.AddChatToUserAsync(member, createdChat.Id);
+                await userChatRepository.AddUserChat(member, createdChat.Id);
             }
 
             return Ok(createdChat);
         }
 
-
-
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetChats(Guid userId, CancellationToken cancellationToken)
         {
-            List<AppChat> Chats = new List<AppChat>();
-            AppUser? user = await userRepository.GetUserByIdAsync(userId);
-            if(user == null)
-            {
-                return BadRequest(new {Message="User not found!"});
-            }
+            IEnumerable<AppChat> chats = new List<AppChat>();
 
-            foreach(var id in user.Chats)
-            {
-                AppChat chat = await chatRepository.GetChatAsync(id);
-                Chats.Add(chat);
-            }
+            chats = await userChatRepository.GetUserChatsAsync(userId);
 
-            return Ok(Chats.OrderBy(chat=>chat.Name).ToList());
+            return Ok(chats.OrderBy(chat=>chat.Name).ToList());
         }
+
+        [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> GetUsersFromChatAsync(Guid chatId, CancellationToken cancellationToken)
+        {
+            IEnumerable<AppUser> users = new List<AppUser>();
+
+            users = await userChatRepository.GetUsersFromChatAsync(chatId);
+
+            return Ok(users);
+        }
+
         [HttpDelete]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> DeleteChat(DeleteChatDto deleteChatDto, CancellationToken cancellationToken)
         {
             var chat = await chatRepository.GetChatAsync(deleteChatDto.chatId);
+
+            if(chat == null)
+            {
+                return BadRequest(new {Message="Chat not found!"});
+            }
+
             if (deleteChatDto.userId != chat.Creator_Id)
             {
                 return BadRequest(new { Message = "You are not the creator of this chat!" });
             }
-            AppUser user = await userRepository.RemoveChatFromUserAsync(deleteChatDto.userId, deleteChatDto.chatId);
-            if(user == null)
-            {
-                return BadRequest(new { Message="User not found" });
-            }
+
             var deletedChat = await chatRepository.DeleteChatAsync(deleteChatDto.chatId);
+
+            await userChatRepository.RemoveUserChat(deleteChatDto.userId, deleteChatDto.chatId);
 
             return Ok(deletedChat);
         }
+
+
         [HttpPost]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> SendMessage(SendMessageDto sendMessageDto, CancellationToken cancellationToken)
@@ -99,15 +97,16 @@ namespace ChatAppBackend.Controllers
             };
 
             AppMessage createdMessage = await chatRepository.CreateMessageAsync(message);
-            AppChat chat = await chatRepository.GetChatAsync(sendMessageDto.ChatId);
 
-            foreach(var member in chat.Members)
+            IEnumerable<AppUser> users = await userChatRepository.GetUsersFromChatAsync(createdMessage.Chat_Id);
+
+            foreach(var user in users)
             {
-                if(member == sendMessageDto.SenderId)
+                if(user.Id == sendMessageDto.SenderId)
                 {
                     continue;
                 }
-                string memberConnectionId = ChatHub.ConnectedUsers.FirstOrDefault(x => x.Value == member).Key;
+                string memberConnectionId = ChatHub.ConnectedUsers.FirstOrDefault(x => x.Value == user.Id).Key;
                 if(memberConnectionId != null)
                 {
                     await hubContext.Clients.Client(memberConnectionId).SendAsync("ReceiveMessage", createdMessage);

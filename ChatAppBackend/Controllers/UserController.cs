@@ -1,6 +1,8 @@
 ﻿using ChatAppBackend.Dtos;
 using ChatAppBackend.Models;
 using ChatAppBackend.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -47,8 +49,11 @@ namespace ChatAppBackend.Controllers
 
             return Ok(users);
         }
+
+
         [HttpPost]
-        public async Task<IActionResult> UploadProfileImage([FromForm]IFormFile file,Guid userId, CancellationToken cancellationToken)
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> UploadProfileImage([FromForm] IFormFile file, CancellationToken cancellationToken)
         {
             string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/profile_images");
 
@@ -57,97 +62,40 @@ namespace ChatAppBackend.Controllers
                 Directory.CreateDirectory(uploadPath);
             }
 
-            if(file == null || file.Length == 0)
+            if (file == null || file.Length == 0)
             {
                 return BadRequest("File upload failed!");
             }
-
             var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             var filePath = Path.Combine(uploadPath, fileName);
 
-            using(var stream = new FileStream(filePath, FileMode.Create))
+            using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
             var fileUrl = $"profile_images/{fileName}";
 
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             AppUser? user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null)
             {
                 return NoContent();
             }
 
+            if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+            {
+                var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.ProfileImageUrl);
+                if (System.IO.File.Exists(oldFilePath))
+                {
+                    System.IO.File.Delete(oldFilePath);
+                }
+            }
+
             user.ProfileImageUrl = fileUrl;
             await _userManager.UpdateAsync(user);
 
             return Ok(user);
-
         }
-
-        //[HttpGet]
-        //public async Task<ActionResult<IEnumerable<IdentityUser>>> GetUsersAsync()
-        //{
-        //    var users = await _userRepository.GetUsersAsync();
-        //    return Ok(users);
-        //}
-
-        //[HttpGet]
-        //public async Task<AppUser> GetUserByIdAsync(Guid id)
-        //{
-        //    var user = await _userManager.FindByIdAsync(id.ToString());
-        //    if (user == null)
-        //    {
-        //        return null;
-        //    }
-        //    return user;
-        //}
-
-        //[HttpPost]
-        //public async Task<ActionResult<IdentityUser>> AddUserAsync(AppUser user)
-        //{
-        //    if (ModelState.IsValid == false)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    await _userRepository.AddUserAsync(user);
-        //    return CreatedAtAction(nameof(GetUserByIdAsync), new { id = user.Id }, user);
-        //}
-
-        //[HttpDelete("{id}")]
-        //public async Task<ActionResult<IdentityUser>> DeleteUserAsync(string id)
-        //{
-        //    try
-        //    {
-        //        var user = await _userRepository.DeleteUserAsync(id);
-        //        return Ok(user);
-        //    }
-        //    catch (KeyNotFoundException e)
-        //    {
-        //        return NotFound(e.Message);
-        //    }
-        //}
-        //[HttpPut("{id}")]
-        //public async Task<ActionResult<AppUser>> UpdateUserAsync(string id, AppUser user)
-        //{
-        //    //if (id != user.Id)
-        //    //{
-        //    //    return BadRequest("Id in the URL does not match the Id in the body");
-        //    //}
-        //    if (ModelState.IsValid == false)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //    try
-        //    {
-        //        var updatedUser = await _userRepository.UpdateUserAsync(user);
-        //        return CreatedAtAction(nameof(GetUserByIdAsync), new { id = user.Id }, user);
-        //    }
-        //    catch (KeyNotFoundException e)
-        //    {
-        //        return NotFound(e.Message);
-        //    }
-
     }
 }
 

@@ -4,5 +4,6 @@ namespace ChatAppBackend.Models
 {
     public sealed class AppUserRole : IdentityUserRole<Guid>
     {
+
     }
 }

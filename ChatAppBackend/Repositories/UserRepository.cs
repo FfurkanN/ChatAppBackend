@@ -14,18 +14,7 @@ namespace ChatAppBackend.Repositories
             _context = context;
         }
 
-        public async Task<AppUser> AddChatToUserAsync(Guid userId, Guid chatId)
-        {
-            AppUser user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
-
-            if(user == null)
-            {
-                throw new KeyNotFoundException("User not found!");
-            }
-            user.Chats.Add(chatId);
-            await _context.SaveChangesAsync();
-            return user;
-        }
+        
 
         public async Task<AppUser?> ChangeUserStatus(AppUser user, bool isOnline)
         {
@@ -51,17 +40,7 @@ namespace ChatAppBackend.Repositories
            return await _context.Users.FindAsync(username);
         }
 
-        public async Task<AppUser> RemoveChatFromUserAsync(Guid userId, Guid chatId)
-        {
-            AppUser user = await _context.Users.FindAsync(userId);
-            if (user == null)
-            {
-                throw new KeyNotFoundException("User not found!");
-            }
-            user.Chats.Remove(chatId);
-            await _context.SaveChangesAsync();
-            return user;
-        }
+        
 
         //public async Task<AppUser> AddUserAsync(AppUser user)
         //{

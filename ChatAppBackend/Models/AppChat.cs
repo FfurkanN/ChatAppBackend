@@ -15,8 +15,8 @@ namespace ChatAppBackend.Models
         [Required]
         public string Name { get; set; } = "";
         [Required]
+        [ForeignKey("UserId")]
         public Guid Creator_Id { get; set; }
-        public List<Guid> Members { get; set; } = new List<Guid>();
         public DateTime Create_Date { get; set; } = DateTime.Now;
         public Boolean isPublic { get; set; } = false;
         public List<Guid> Messages { get; set; } = new List<Guid>();

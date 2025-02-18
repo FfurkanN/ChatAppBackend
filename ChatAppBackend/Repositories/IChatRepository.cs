@@ -1,5 +1,4 @@
-﻿using ChatAppBackend.Dtos;
-using ChatAppBackend.Models;
+﻿using ChatAppBackend.Models;
 
 namespace ChatAppBackend.Repositories
 {

@@ -7,11 +7,7 @@ namespace ChatAppBackend.Models
         public string Firstname { get; set; } = string.Empty;
         public string Lastname { get; set; } = string.Empty;
         public string Fullname => string.Join(" ",Firstname,Lastname);
-
         public string ProfileImageUrl { get; set; } = string.Empty;
-
-        public List<Guid> Chats { get; set; } = new List<Guid>();
-
         public string RefreshToken { get; set; } = string.Empty;
         public bool isOnline { get; set; } = false;
     }

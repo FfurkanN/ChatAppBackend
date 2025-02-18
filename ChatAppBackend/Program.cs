@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 namespace ChatAppBackend
@@ -19,7 +20,10 @@ namespace ChatAppBackend
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+            });
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -28,6 +32,7 @@ namespace ChatAppBackend
 
             builder.Services.AddScoped<IChatRepository, ChatRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IUserChatRepository, UserChatRepository>();
 
             builder.Services.AddAuthentication(options =>
             {
@@ -95,7 +100,11 @@ namespace ChatAppBackend
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                    c.RoutePrefix = ""; // Root URL'de açýlmasý için boþ býrak
+                });
             }
 
             app.UseHttpsRedirection();
@@ -104,6 +113,8 @@ namespace ChatAppBackend
             app.UseAuthorization();
 
             app.UseCors("AllowAll");
+
+            app.UseStaticFiles();
 
             app.MapControllers();
             app.MapHub<ChatHub>("/chat-hub");

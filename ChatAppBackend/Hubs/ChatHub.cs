@@ -10,7 +10,7 @@ namespace ChatAppBackend.Hubs
 
         public async Task Connect(Guid userId)
         {
-            if (ConnectedUsers.ContainsKey(Context.ConnectionId))
+            if (ConnectedUsers.ContainsValue(userId))
             {
                 return;
             }
@@ -38,22 +38,6 @@ namespace ChatAppBackend.Hubs
             }
         }
 
-        // 📌 WebRTC Offer Gönderme
-        public async Task SendOffer(string offer, string toUserId)
-        {
-            await Clients.User(toUserId).SendAsync("ReceiveOffer", offer, ConnectedUsers[Context.ConnectionId]);
-        }
 
-        // 📌 WebRTC Answer Gönderme
-        public async Task SendAnswer(string answer, string toUserId)
-        {
-            await Clients.User(toUserId).SendAsync("ReceiveAnswer", answer, ConnectedUsers[Context.ConnectionId]);
-        }
-
-        // 📌 ICE Candidate Gönderme
-        public async Task SendIceCandidate(string candidate, string toUserId)
-        {
-            await Clients.User(toUserId).SendAsync("ReceiveIceCandidate", candidate, ConnectedUsers[Context.ConnectionId]);
-        }
     }
 }

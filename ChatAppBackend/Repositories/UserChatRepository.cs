@@ -73,5 +73,30 @@ namespace ChatAppBackend.Repositories
 
             return appUserChat;
         }
+
+        public async Task<AppUserChat> UpdateUnreadMessageCountAsync(Guid userId, Guid chatId, int count)
+        {
+            Console.WriteLine("USERID" + userId + " CHATID" + chatId+" COUNT"+count);
+            AppUserChat? appUserChat = await _context.UserChat.FirstOrDefaultAsync(p=> p.UserId == userId && p.ChatId == chatId);
+            if (appUserChat == null)
+            {
+                throw new KeyNotFoundException("UserChat was not found");
+            }
+            _context.UserChat.Update(appUserChat);
+            appUserChat.UnreadMessageCount = count;
+            await _context.SaveChangesAsync();
+
+            return appUserChat;
+        }
+
+        public async Task<int> GetUnreadMessageCountAsync(Guid userId, Guid chatId)
+        {
+            AppUserChat? appUserChat = await _context.UserChat.FirstOrDefaultAsync(p => p.UserId == userId && p.ChatId == chatId);
+            if (appUserChat == null)
+            {
+                throw new KeyNotFoundException("UserChat was not found");
+            }
+            return appUserChat.UnreadMessageCount;
+        }
     }
 }

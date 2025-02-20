@@ -1,6 +1,7 @@
 ﻿using ChatAppBackend.Data;
 using ChatAppBackend.Dtos;
 using ChatAppBackend.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChatAppBackend.Repositories
 {
@@ -23,9 +24,11 @@ namespace ChatAppBackend.Repositories
         public async Task<AppMessage> CreateMessageAsync(AppMessage message)
         {
             await _context.Messages.AddAsync(message);
-            AppChat? chat = await _context.Chats.FindAsync(message.Chat_Id);
-            chat.Messages.Add(message.Id);
+
+            await _context.ChatMessages.AddAsync(new AppChatMessage { ChatId = message.Chat_Id, MessageId = message.Id });
+
             await _context.SaveChangesAsync();
+            
             return message;
         }
 
@@ -36,7 +39,11 @@ namespace ChatAppBackend.Repositories
                 throw new KeyNotFoundException("Chat not found");
 
             _context.Chats.Remove(chat);
+            _context.ChatMessages.Where(m => m.ChatId == Id).ExecuteDelete();
+            _context.Messages.Where(m => m.Chat_Id == Id).ExecuteDelete();
+
             await _context.SaveChangesAsync();
+
             return chat;
         }
 
@@ -52,17 +59,20 @@ namespace ChatAppBackend.Repositories
             if (chat == null)
                 throw new KeyNotFoundException("Chat not found");
 
+
+            List<AppChatMessage> chatMessages = await _context.ChatMessages.Where(m=> m.ChatId == chatId).ToListAsync();
+
             List<AppMessage> messages = new List<AppMessage>();
 
-            foreach (var messageId in chat.Messages)
+            foreach (var chatMessage in chatMessages)
             {
-                AppMessage? message = await _context.Messages.FindAsync(messageId);
+                AppMessage? message = await _context.Messages.FindAsync(chatMessage.MessageId);
                 if (message == null)
                     throw new KeyNotFoundException("Message not found");
                 messages.Add(message);
             }
 
-            return messages;
+            return messages.OrderBy(m=> m.Send_Date);
         }
     }
 }

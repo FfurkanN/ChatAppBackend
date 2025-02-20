@@ -12,6 +12,7 @@ namespace ChatAppBackend.Data
         public DbSet<AppChat> Chats { get; set; }
         public DbSet<AppMessage> Messages { get; set; }
         public DbSet<AppUserChat> UserChat { get; set; }
+        public DbSet<AppChatMessage> ChatMessages { get; set; }
 
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
@@ -21,7 +22,9 @@ namespace ChatAppBackend.Data
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<AppUserChat>().HasNoKey();
+            builder.Entity<AppUserChat>().HasNoKey().HasKey(uc => new { uc.UserId, uc.ChatId });
+
+            builder.Entity<AppChatMessage>().HasKey(cm => new { cm.ChatId, cm.MessageId });
         }
 
     }

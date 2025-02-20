@@ -10,5 +10,9 @@ namespace ChatAppBackend.Repositories
         public Task<IEnumerable<AppChat>> GetUserChatsAsync(Guid userId);
 
         public Task<IEnumerable<AppUser>> GetUsersFromChatAsync(Guid chatId);
+
+        public Task<AppUserChat> UpdateUnreadMessageCountAsync(Guid userId, Guid chatId, int count);
+
+        public Task<int> GetUnreadMessageCountAsync(Guid userId, Guid chatId);
     }
 }

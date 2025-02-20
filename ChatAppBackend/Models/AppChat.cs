@@ -19,7 +19,6 @@ namespace ChatAppBackend.Models
         public Guid Creator_Id { get; set; }
         public DateTime Create_Date { get; set; } = DateTime.Now;
         public Boolean isPublic { get; set; } = false;
-        public List<Guid> Messages { get; set; } = new List<Guid>();
         public int unreadMessageCount { get; set; } = 0;
     }
 }

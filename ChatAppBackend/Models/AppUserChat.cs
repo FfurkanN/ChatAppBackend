@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ChatAppBackend.Models
@@ -12,5 +11,6 @@ namespace ChatAppBackend.Models
         [Required]
         [ForeignKey("ChatId")]
         public Guid ChatId { get; set; }
+        public int UnreadMessageCount { get; set; } = 0;
     }
     }

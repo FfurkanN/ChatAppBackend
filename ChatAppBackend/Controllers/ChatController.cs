@@ -40,8 +40,10 @@ namespace ChatAppBackend.Controllers
 
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> GetChats(Guid userId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetChats(CancellationToken cancellationToken)
         {
+            var userId = new Guid(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+
             IEnumerable<AppChat> chats = new List<AppChat>();
 
             chats = await userChatRepository.GetUserChatsAsync(userId);
@@ -65,20 +67,21 @@ namespace ChatAppBackend.Controllers
         public async Task<IActionResult> DeleteChat(DeleteChatDto deleteChatDto, CancellationToken cancellationToken)
         {
             var chat = await chatRepository.GetChatAsync(deleteChatDto.chatId);
+            var userId = new Guid(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
 
             if(chat == null)
             {
                 return BadRequest(new {Message="Chat not found!"});
             }
 
-            if (deleteChatDto.userId != chat.Creator_Id)
+            if (userId != chat.Creator_Id)
             {
                 return BadRequest(new { Message = "You are not the creator of this chat!" });
             }
 
             var deletedChat = await chatRepository.DeleteChatAsync(deleteChatDto.chatId);
 
-            await userChatRepository.RemoveUserChat(deleteChatDto.userId, deleteChatDto.chatId);
+            await userChatRepository.RemoveUserChat(userId, deleteChatDto.chatId);
 
             return Ok(deletedChat);
         }
@@ -88,12 +91,13 @@ namespace ChatAppBackend.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> SendMessage(SendMessageDto sendMessageDto, CancellationToken cancellationToken)
         {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             AppMessage message = new()
             {
                 Chat_Id = sendMessageDto.ChatId,
-                Sender_Id = sendMessageDto.SenderId,
+                Sender_Id = new Guid(userId),
                 Content = sendMessageDto.Content,
-                Send_Date = sendMessageDto.SendDate,
+                Send_Date =  DateTime.Now
             };
 
             AppMessage createdMessage = await chatRepository.CreateMessageAsync(message);
@@ -102,7 +106,7 @@ namespace ChatAppBackend.Controllers
 
             foreach(var user in users)
             {
-                if(user.Id == sendMessageDto.SenderId)
+                if(user.Id == new Guid(userId))
                 {
                     continue;
                 }
@@ -122,6 +126,30 @@ namespace ChatAppBackend.Controllers
         {
             IEnumerable<AppMessage> messages = await chatRepository.GetMessagesByChatIdAsync(chatId);
             return Ok(messages.OrderBy(message => message.Send_Date).ToList());
+        }
+
+        [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> UpdateUnreadMessageCount(UpdateUnreadMessageDto unreadMessageDto, CancellationToken cancellationToken)
+        {
+            Console.WriteLine("CHATID" + unreadMessageDto.chatId);
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            AppUserChat userChat = await userChatRepository.UpdateUnreadMessageCountAsync(new Guid(userId), unreadMessageDto.chatId,unreadMessageDto.count);
+
+            return Ok(userChat);
+        }
+
+        [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> GetUnreadMessageCount(Guid chatId, CancellationToken cancellationToken)
+        {
+            Console.WriteLine("CHATID" + chatId);
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            int unreadMessageCount = await userChatRepository.GetUnreadMessageCountAsync(new Guid(userId), chatId);
+
+            return Ok(unreadMessageCount);
         }
     }
 }

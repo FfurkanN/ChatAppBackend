@@ -21,19 +21,15 @@ namespace ChatAppBackend.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> Create(CreateChatDto createChatDto,CancellationToken cancellationToken)
         {
+            var userId = new Guid(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
             AppChat chat = new AppChat
             {
                 Name = createChatDto.ChatName,
-                Creator_Id = createChatDto.CreatorId,
+                Creator_Id = userId,
                 isPublic = createChatDto.isPublic
             };
-
-            AppChat createdChat = await chatRepository.CreateChatAsync(chat);
-
-            foreach (var member in createChatDto.members)
-            {
-                await userChatRepository.AddUserChat(member, createdChat.Id);
-            }
+            createChatDto.members.Add(userId);
+            AppChat createdChat = await chatRepository.CreateChatAsync(chat, createChatDto.members);
 
             return Ok(createdChat);
         }

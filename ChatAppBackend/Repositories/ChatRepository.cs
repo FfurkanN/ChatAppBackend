@@ -14,9 +14,20 @@ namespace ChatAppBackend.Repositories
             _context = context;
         }
 
-        public async Task<AppChat> CreateChatAsync(AppChat chat)
+        public async Task<AppChat> CreateChatAsync(AppChat chat, IEnumerable<Guid> members)
         {
             await _context.Chats.AddAsync(chat);
+
+            foreach (var member in members)
+            {
+                AppUserChat appUserChat = new AppUserChat()
+                {
+                    UserId = member,
+                    ChatId = chat.Id
+                };
+
+                await _context.UserChat.AddAsync(appUserChat);
+            }
             await _context.SaveChangesAsync();
             return chat;
         }

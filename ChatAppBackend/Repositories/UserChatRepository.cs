@@ -16,17 +16,22 @@ namespace ChatAppBackend.Repositories
             _chatRepository = chatRepository;
             _userRepository = userRepository;
         }
-        public async Task<AppUserChat> AddUserChat(Guid userId, Guid chatId)
+        public async Task<IEnumerable<AppUserChat>> AddUserChat(Guid[] userIds, Guid chatId)
         {
-            AppUserChat appUserChat = new AppUserChat
+           List<AppUserChat> usersChats = new List<AppUserChat>();
+           foreach(var userId in userIds)
             {
-                UserId = userId,
-                ChatId = chatId
-            };
-            await _context.UserChat.AddAsync(appUserChat);
+                AppUserChat appUserChat = new AppUserChat
+                {
+                    UserId = userId,
+                    ChatId = chatId
+                };
+                await _context.UserChat.AddAsync(appUserChat);
+                usersChats.Add(appUserChat);
+            }
             await _context.SaveChangesAsync();
 
-            return appUserChat;
+            return usersChats;
         }
 
         public async Task<IEnumerable<AppChat>> GetUserChatsAsync(Guid userId)

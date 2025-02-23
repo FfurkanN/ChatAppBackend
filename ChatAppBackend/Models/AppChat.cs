@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 
 namespace ChatAppBackend.Models
 {
-    public sealed class AppChat
+    public class AppChat
     {
         public AppChat()
         {
@@ -18,7 +17,6 @@ namespace ChatAppBackend.Models
         [ForeignKey("UserId")]
         public Guid Creator_Id { get; set; }
         public DateTime Create_Date { get; set; } = DateTime.Now;
-        public Boolean isPublic { get; set; } = false;
-        public int unreadMessageCount { get; set; } = 0;
+
     }
 }

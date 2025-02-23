@@ -2,7 +2,6 @@
 {
     public sealed record CreateChatDto(
         string ChatName,
-        List<Guid> members,
-        Boolean isPublic
+        Guid ChannelId
         );
 }

@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Text.Json.Serialization;
 
 namespace ChatAppBackend.Models
 {
-    public sealed class AppUser : IdentityUser<Guid>
+    public  class AppUser : IdentityUser<Guid>
     {
         public string Firstname { get; set; } = string.Empty;
         public string Lastname { get; set; } = string.Empty;
@@ -10,5 +11,8 @@ namespace ChatAppBackend.Models
         public string ProfileImageUrl { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;
         public bool isOnline { get; set; } = false;
+
+        [JsonIgnore]
+        public ICollection<AppChannelUser> ChannelUser { get; set; }
     }
 }

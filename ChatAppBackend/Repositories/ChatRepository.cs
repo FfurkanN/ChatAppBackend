@@ -14,20 +14,12 @@ namespace ChatAppBackend.Repositories
             _context = context;
         }
 
-        public async Task<AppChat> CreateChatAsync(AppChat chat, IEnumerable<Guid> members)
+        public async Task<AppChat> CreateChatAsync(AppChat chat, Guid channelId)
         {
             await _context.Chats.AddAsync(chat);
 
-            foreach (var member in members)
-            {
-                AppUserChat appUserChat = new AppUserChat()
-                {
-                    UserId = member,
-                    ChatId = chat.Id
-                };
-
-                await _context.UserChat.AddAsync(appUserChat);
-            }
+            await _context.ChannelChat.AddAsync(new AppChannelChat { ChannelId = channelId, ChatId = chat.Id });
+            
             await _context.SaveChangesAsync();
             return chat;
         }
@@ -50,6 +42,7 @@ namespace ChatAppBackend.Repositories
                 throw new KeyNotFoundException("Chat not found");
 
             _context.Chats.Remove(chat);
+            _context.ChannelChat.Where(c => c.ChatId == Id).ExecuteDelete();
             _context.ChatMessages.Where(m => m.ChatId == Id).ExecuteDelete();
             _context.Messages.Where(m => m.Chat_Id == Id).ExecuteDelete();
 
@@ -84,6 +77,14 @@ namespace ChatAppBackend.Repositories
             }
 
             return messages.OrderBy(m=> m.Send_Date);
+        }
+
+        public async Task<AppChat> UpdateChat(AppChat chat)
+        {
+            _context.Chats.Update(chat);
+            await _context.SaveChangesAsync();
+
+            return chat;
         }
     }
 }

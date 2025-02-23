@@ -5,9 +5,11 @@ using ChatAppBackend.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace ChatAppBackend
 {
@@ -19,6 +21,11 @@ namespace ChatAppBackend
             var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]);
 
             builder.Services.AddControllers();
+            //AddJsonOptions(options =>
+            //{
+            //    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+            //    options.JsonSerializerOptions.WriteIndented = true;
+            //});
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
@@ -33,6 +40,7 @@ namespace ChatAppBackend
             builder.Services.AddScoped<IChatRepository, ChatRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserChatRepository, UserChatRepository>();
+            builder.Services.AddScoped<IChannelRepository, ChannelRepository>();
 
             builder.Services.AddAuthentication(options =>
             {

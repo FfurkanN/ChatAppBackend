@@ -22,6 +22,71 @@ namespace ChatAppBackend.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ChatAppBackend.Models.AppChannel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ChannelImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Create_Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("Creator_Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("isPublic")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Channels");
+                });
+
+            modelBuilder.Entity("ChatAppBackend.Models.AppChannelChat", b =>
+                {
+                    b.Property<Guid>("ChannelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChatId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ChannelId", "ChatId");
+
+                    b.HasIndex("ChatId");
+
+                    b.ToTable("ChannelChat");
+                });
+
+            modelBuilder.Entity("ChatAppBackend.Models.AppChannelUser", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChannelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("UnreadMessageCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "ChannelId");
+
+                    b.HasIndex("ChannelId");
+
+                    b.ToTable("ChannelUser");
+                });
+
             modelBuilder.Entity("ChatAppBackend.Models.AppChat", b =>
                 {
                     b.Property<Guid>("Id")
@@ -37,12 +102,6 @@ namespace ChatAppBackend.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("isPublic")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("unreadMessageCount")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -75,8 +134,13 @@ namespace ChatAppBackend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("File_Url")
-                        .IsRequired()
+                    b.Property<string>("FileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MessageType")
@@ -210,22 +274,6 @@ namespace ChatAppBackend.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("ChatAppBackend.Models.AppUserChat", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ChatId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("UnreadMessageCount")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "ChatId");
-
-                    b.ToTable("UserChat");
-                });
-
             modelBuilder.Entity("ChatAppBackend.Models.AppUserRole", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -329,6 +377,44 @@ namespace ChatAppBackend.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ChatAppBackend.Models.AppChannelChat", b =>
+                {
+                    b.HasOne("ChatAppBackend.Models.AppChannel", "Channel")
+                        .WithMany("ChannelChats")
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ChatAppBackend.Models.AppChat", "Chat")
+                        .WithMany()
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Channel");
+
+                    b.Navigation("Chat");
+                });
+
+            modelBuilder.Entity("ChatAppBackend.Models.AppChannelUser", b =>
+                {
+                    b.HasOne("ChatAppBackend.Models.AppChannel", "Channel")
+                        .WithMany("ChannelUser")
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ChatAppBackend.Models.AppUser", "User")
+                        .WithMany("ChannelUser")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Channel");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ChatAppBackend.Models.AppUserRole", b =>
                 {
                     b.HasOne("ChatAppBackend.Models.AppRole", null)
@@ -378,6 +464,18 @@ namespace ChatAppBackend.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ChatAppBackend.Models.AppChannel", b =>
+                {
+                    b.Navigation("ChannelChats");
+
+                    b.Navigation("ChannelUser");
+                });
+
+            modelBuilder.Entity("ChatAppBackend.Models.AppUser", b =>
+                {
+                    b.Navigation("ChannelUser");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,4 +1,5 @@
 ﻿using ChatAppBackend.Data;
+using ChatAppBackend.Dtos;
 using ChatAppBackend.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,101 +8,171 @@ namespace ChatAppBackend.Repositories
     public class UserChatRepository : IUserChatRepository
     {
         private readonly ApplicationDbContext _context;
-        private readonly IChatRepository _chatRepository;
-        private readonly IUserRepository _userRepository;
 
-        public UserChatRepository(ApplicationDbContext context, IChatRepository chatRepository, IUserRepository userRepository)
+        public UserChatRepository(ApplicationDbContext context)
         {
             _context = context;
-            _chatRepository = chatRepository;
-            _userRepository = userRepository;
         }
-        public async Task<IEnumerable<AppUserChat>> AddUserChat(Guid[] userIds, Guid chatId)
+        //public async Task<IEnumerable<AppUserChannel>> AddUserChat(Guid[] userIds, Guid chatId)
+        //{
+        //   List<AppUserChannel> usersChats = new List<AppUserChannel>();
+        //   foreach(var userId in userIds)
+        //    {
+        //        AppUserChannel appUserChat = new AppUserChannel
+        //        {
+        //            UserId = userId,
+        //            ChatId = chatId
+        //        };
+        //        await _context.UserChat.AddAsync(appUserChat);
+        //        usersChats.Add(appUserChat);
+        //    }
+        //    await _context.SaveChangesAsync();
+
+        //    return usersChats;
+        //}
+
+        //public async Task<IEnumerable<ChatDto>> GetUserChatsAsync(Guid userId)
+        //{
+
+        //    var chats = await _context.UserChat.Where(uc => uc.UserId == userId)
+        //        .Select(uc => new ChatDto
+        //        (
+        //            uc.Chat.Id,
+        //            uc.Chat.Name,
+        //            uc.Chat.Creator_Id,
+        //            uc.Chat.isPublic,
+        //            uc.Chat.Create_Date,
+        //            _context.UserChat.Count(c=> c.ChatId == uc.Chat.Id),
+        //            _context.UserChat.Count(c=> c.ChatId == uc.Chat.Id && c.User.isOnline)
+        //        )).ToListAsync();
+
+        //    return chats;
+        //}
+
+        //public async Task<IEnumerable<ChatDto>> GetOwnedChatsAsync(Guid userId)
+        //{
+
+        //    var chats = await _context.UserChat.Where(uc => uc.UserId == userId && uc.Chat.Creator_Id == userId)
+        //        .Select(uc => new ChatDto
+        //        (
+        //            uc.Chat.Id,
+        //            uc.Chat.Name,
+        //            uc.Chat.Creator_Id,
+        //            uc.Chat.isPublic,
+        //            uc.Chat.Create_Date,
+        //            _context.UserChat.Count(c => c.ChatId == uc.Chat.Id),
+        //            _context.UserChat.Count(c => c.ChatId == uc.Chat.Id && c.User.isOnline)
+        //        )).ToListAsync();
+
+        //    return chats;
+        //}
+
+        //public async Task<IEnumerable<UserDto>> GetUsersFromChatAsync(Guid chatId)
+        //{
+        //    var users = await _context.UserChat.Where(uc => uc.ChatId == chatId)
+        //        .Select(uc => new UserDto
+        //        (
+        //            uc.User.Id,
+        //            uc.User.UserName,
+        //            uc.User.isOnline,
+        //            uc.User.ProfileImageUrl
+        //        )).ToListAsync();
+
+        //    return users;
+        //}
+
+        //public async Task<AppUserChannel> RemoveUserChat(Guid userId, Guid chatId)
+        //{
+        //    AppUserChannel? appUserChat = await _context.UserChat.FirstOrDefaultAsync(p => p.UserId == userId && p.ChatId == chatId);
+
+        //    if (appUserChat == null)
+        //    {
+        //        throw new KeyNotFoundException("UserChat not found!");
+        //    }
+
+        //    _context.UserChat.Remove(appUserChat);
+        //    await _context.SaveChangesAsync();
+
+        //    return appUserChat;
+        //}
+
+        //public async Task<AppChannelUser> UpdateUnreadMessageCountAsync(Guid userId, Guid chatId, int count)
+        //{
+        //    AppChannelUser? appUserChat = await _context.UserChat.FirstOrDefaultAsync(p=> p.UserId == userId && p.ChatId == chatId);
+        //    if (appUserChat == null)
+        //    {
+        //        throw new KeyNotFoundException("UserChat was not found");
+        //    }
+        //    appUserChat.UnreadMessageCount = count;
+        //    _context.UserChat.Update(appUserChat);
+        //    await _context.SaveChangesAsync();
+
+        //    return appUserChat;
+        //}
+
+        //public async Task<int> GetUnreadMessageCountAsync(Guid userId, Guid chatId)
+        //{
+        //    AppUserChannel? appUserChat = await _context.UserChat.FirstOrDefaultAsync(p => p.UserId == userId && p.ChatId == chatId);
+        //    if (appUserChat == null)
+        //    {
+        //        throw new KeyNotFoundException("UserChat was not found");
+        //    }
+        //    return appUserChat.UnreadMessageCount;
+        //}
+
+        public Task<AppChannelUser> RemoveUserChat(Guid userId, Guid chatId)
         {
-           List<AppUserChat> usersChats = new List<AppUserChat>();
-           foreach(var userId in userIds)
-            {
-                AppUserChat appUserChat = new AppUserChat
-                {
-                    UserId = userId,
-                    ChatId = chatId
-                };
-                await _context.UserChat.AddAsync(appUserChat);
-                usersChats.Add(appUserChat);
-            }
-            await _context.SaveChangesAsync();
-
-            return usersChats;
+            throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<AppChat>> GetUserChatsAsync(Guid userId)
+        public Task<IEnumerable<AppChannelUser>> AddUserChat(Guid[] userId, Guid chatId)
         {
-            List<AppUserChat> appUserChats = await _context.UserChat.Where(p => p.UserId == userId).ToListAsync();
-
-            List<AppChat> userChats = new List<AppChat>();
-            foreach (var userChat in appUserChats)
-            {
-                AppChat appChat = await _chatRepository.GetChatAsync(userChat.ChatId);
-                userChats.Add(appChat);
-            }
-            return userChats;
+            throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<AppUser>> GetUsersFromChatAsync(Guid chatId)
+        public Task<IEnumerable<ChatDto>> GetUserChatsAsync(Guid userId)
         {
-            List<AppUserChat> appchatUsers = await _context.UserChat.Where(p => p.ChatId == chatId).ToListAsync();
-
-            List<AppUser> chatUsers = new List<AppUser>();
-
-            foreach (var chatUser in appchatUsers)
-            {
-                AppUser? user = await _userRepository.GetUserByIdAsync(chatUser.UserId);
-                if(user != null)
-                {
-                    chatUsers.Add(user);
-                }
-            }
-            return chatUsers;
+            throw new NotImplementedException();
         }
 
-        public async Task<AppUserChat> RemoveUserChat(Guid userId, Guid chatId)
+        public Task<IEnumerable<ChatDto>> GetOwnedChatsAsync(Guid userId)
         {
-            AppUserChat? appUserChat = await _context.UserChat.FirstOrDefaultAsync(p => p.UserId == userId && p.ChatId == chatId);
-
-            if (appUserChat == null)
-            {
-                throw new KeyNotFoundException("UserChat not found!");
-            }
-
-            _context.UserChat.Remove(appUserChat);
-            await _context.SaveChangesAsync();
-
-            return appUserChat;
+            throw new NotImplementedException();
         }
 
-        public async Task<AppUserChat> UpdateUnreadMessageCountAsync(Guid userId, Guid chatId, int count)
+        public Task<IEnumerable<UserDto>> GetUsersFromChatAsync(Guid chatId)
         {
-            Console.WriteLine("USERID" + userId + " CHATID" + chatId+" COUNT"+count);
-            AppUserChat? appUserChat = await _context.UserChat.FirstOrDefaultAsync(p=> p.UserId == userId && p.ChatId == chatId);
-            if (appUserChat == null)
-            {
-                throw new KeyNotFoundException("UserChat was not found");
-            }
-            _context.UserChat.Update(appUserChat);
-            appUserChat.UnreadMessageCount = count;
-            await _context.SaveChangesAsync();
-
-            return appUserChat;
+            throw new NotImplementedException();
         }
 
-        public async Task<int> GetUnreadMessageCountAsync(Guid userId, Guid chatId)
+        public Task<int> GetUserCountAsync(Guid chatId)
         {
-            AppUserChat? appUserChat = await _context.UserChat.FirstOrDefaultAsync(p => p.UserId == userId && p.ChatId == chatId);
-            if (appUserChat == null)
-            {
-                throw new KeyNotFoundException("UserChat was not found");
-            }
-            return appUserChat.UnreadMessageCount;
+            throw new NotImplementedException();
         }
+
+        public Task<int> GetOnlineUserCountAsync(Guid chatId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<AppChannelUser> UpdateUnreadMessageCountAsync(Guid userId, Guid chatId, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> GetUnreadMessageCountAsync(Guid userId, Guid chatId)
+        {
+            throw new NotImplementedException();
+        }
+
+        //public async Task<int> GetUserCountAsync(Guid chatId)
+        //{
+        //    return await _context.UserChat.Where(c => c.ChatId == chatId).CountAsync();
+        //}
+
+        //public async Task<int> GetOnlineUserCountAsync(Guid chatId)
+        //{
+        //    return await _context.UserChat.Where(uc => uc.ChatId == chatId && uc.User.isOnline).CountAsync();
+        //}
     }
 }

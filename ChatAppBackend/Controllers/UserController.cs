@@ -13,13 +13,16 @@ namespace ChatAppBackend.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
+        private readonly IUserChatRepository _userChatRepository;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IChannelRepository _channelRepository;
 
-        public UserController(IUserRepository userRepository, UserManager<AppUser> userManager)
-        //public UserController(IUserRepository userRepository, UserManager<AppUser> userManager)
+        public UserController(IUserRepository userRepository, IUserChatRepository userChatRepository, UserManager<AppUser> userManager, IChannelRepository channelRepository)
         {
             _userRepository = userRepository;
             _userManager = userManager;
+            _userChatRepository = userChatRepository;
+            _channelRepository = channelRepository;
         }
 
         [HttpGet]
@@ -49,6 +52,46 @@ namespace ChatAppBackend.Controllers
 
             return Ok(users);
         }
+
+        [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> GetOwnedChannelsAsync(CancellationToken cancellationToken)
+        {
+            var userId = new Guid(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+
+            List<ChannelDto> channels = await _userRepository.GetOwnedChannelsAsync(userId);
+
+            return Ok(channels);
+        }
+
+        [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> GetUserChannelsAsync(CancellationToken cancellationToken)
+        {
+            var userId = new Guid(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+
+            IEnumerable<ChannelDto> channels = await _userRepository.GetChannelsAsync(userId);
+
+            return Ok(channels);
+        }
+
+        //[HttpGet]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //public async Task<IActionResult> GetUserCountByChatId(Guid chatId, CancellationToken cancellationToken)
+        //{
+        //    var userCount = await _userChatRepository.GetUserCountAsync(chatId);
+
+        //    return Ok(userCount);
+        //}
+
+        //[HttpGet]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //public async Task<IActionResult> GetOnlineUserCountByChatId(Guid chatId, CancellationToken cancellationToken)
+        //{
+        //    var userCount = await _userChatRepository.GetOnlineUserCountAsync(chatId);
+
+        //    return Ok(userCount);
+        //}
 
 
         [HttpPost]

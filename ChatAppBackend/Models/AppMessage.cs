@@ -21,7 +21,12 @@ namespace ChatAppBackend.Models
         [AllowNull]
         public string Content { get; set; } = "";
         [AllowNull]
-        public string File_Url { get; set; } = "";
+        public string? FileName { get; set; } = "";
+        [AllowNull]
+        public string? FileUrl { get; set; } = "";
+        [AllowNull]
+        public long? FileSize { get; set; }  
+
         [Required]
         public DateTime Send_Date { get; set; }
         [AllowNull]

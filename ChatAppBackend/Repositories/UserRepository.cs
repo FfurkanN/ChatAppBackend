@@ -1,4 +1,5 @@
 ﻿using ChatAppBackend.Data;
+using ChatAppBackend.Dtos;
 using ChatAppBackend.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -30,6 +31,45 @@ namespace ChatAppBackend.Repositories
             return userByDb;
         }
 
+        public async Task<List<ChannelDto>> GetChannelsAsync(Guid id)
+        {
+            var channels = await _context.ChannelUser.Where(c => c.UserId == id)
+                .Select(c => new ChannelDto
+                (
+                c.Channel.Id,
+                c.Channel.Name,
+                c.Channel.Description,
+                c.Channel.ChannelImageUrl,
+                c.Channel.Creator_Id,
+                c.Channel.Create_Date,
+                c.Channel.isPublic
+                )).ToListAsync();
+
+            return channels;
+        }
+
+        public async Task<List<ChannelDto>> GetOwnedChannelsAsync(Guid id)
+        {
+            var channels = await _context.Channels.Where(c=>c.Creator_Id == id)
+               .Select(c => new ChannelDto
+               (
+               c.Id,
+               c.Name,
+               c.Description,
+               c.ChannelImageUrl,
+               c.Creator_Id,
+               c.Create_Date,
+               c.isPublic
+               )).ToListAsync();
+
+            return channels;
+        }
+
+        public async Task<IEnumerable<AppChat>> GetOwnedChats(Guid Id)
+        {
+            return await _context.Chats.Where(c=> c.Creator_Id == Id).OrderBy(c=>c.Create_Date).ToListAsync();
+        }
+
         public async Task<AppUser?> GetUserByIdAsync(Guid id)
         {
             return await _context.Users.FindAsync(id);
@@ -42,47 +82,6 @@ namespace ChatAppBackend.Repositories
 
         
 
-        //public async Task<AppUser> AddUserAsync(AppUser user)
-        //{
-        //    await _context.Users.AddAsync(user);
-        //    await _context.SaveChangesAsync();
-        //    return user;
-        //}
-
-        //public async Task<AppUser> DeleteUserAsync(string id)
-        //{
-        //    var user = await _context.Users.FindAsync(id);
-        //    if (user == null)
-        //        throw new KeyNotFoundException("User not found");
-
-        //    _context.Users.Remove(user);
-        //    await _context.SaveChangesAsync();
-        //    return user;
-        //}
-
-        //public async Task<AppUser?> GetUserByIdAsync(string id)
-        //{
-        //    return await _context.Users.FindAsync(id);
-        //}
-
-        //public async Task<IEnumerable<AppUser>> GetUsersAsync()
-        //{
-        //    return await _context.Users.ToListAsync();
-        //}
-
-        //public async Task<AppUser> UpdateUserAsync(AppUser user)
-        //{
-        //    var existingUser = await _context.FindAsync<AppUser>(user.Id);
-        //    if(existingUser == null)
-        //        throw new KeyNotFoundException("User not found!");
-
-        //    existingUser.UserName = user.UserName;
-        //    existingUser.Email = user.Email;
-
-        //    _context.Users.Update(user);
-        //    await _context.SaveChangesAsync();
-        //    return existingUser;
-        //}
     }
 
 }

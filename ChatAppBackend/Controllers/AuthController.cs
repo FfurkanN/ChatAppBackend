@@ -1,4 +1,4 @@
-﻿using ChatAppBackend.Data;
+﻿using ChatAppBackend.Services;
 using ChatAppBackend.Dtos;
 using ChatAppBackend.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -35,20 +35,103 @@ namespace ChatAppBackend.Controllers
             var jwtService = new JwtService(configuration);
             string accessToken = jwtService.GenerateAccessToken(appUser);
             string refreshToken = jwtService.GenerateRefreshToken();
-            int expiresIn = 60 * 24;
 
             appUser.RefreshToken = refreshToken;
             await userManager.UpdateAsync(appUser);
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.Now.AddHours(1),
+                Domain = "localhost",
+                Path = "/"
+            };
+
+            Response.Cookies.Append("access_token", accessToken, cookieOptions);
+            Response.Cookies.Append("refresh_token", refreshToken, cookieOptions);
 
             return Ok(new
             {
                 TokenType = "Bearer",
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
-                expiresIn
             });
 
         }
+        
+
+        [HttpPost]
+        public async Task<IActionResult> Login(LoginDto request, CancellationToken cancellationToken)
+        {
+            AppUser? appUser = await userManager.Users.FirstOrDefaultAsync(p => p.Email == request.UserNameOrEmail || p.UserName == request.UserNameOrEmail, cancellationToken);
+
+            if (appUser is null)
+            {
+                return BadRequest();
+            }
+
+            SignInResult result = await signInManager.CheckPasswordSignInAsync(appUser, request.Password, false);
+
+            if (result.IsLockedOut)
+            {
+                TimeSpan? timeSpan = appUser.LockoutEnd - DateTime.Now;
+                return StatusCode(500, $"Your user has been locked for {(timeSpan?.TotalSeconds ?? 30)} seconds because you entered your password incorrectly 3 times.");
+            }
+            bool isPasswordCorrect = await userManager.CheckPasswordAsync(appUser, request.Password);
+
+            //if (!result.Succeeded)
+            //{
+            //    return StatusCode(500, result);
+            //}
+
+            if (!isPasswordCorrect)
+            {
+                return BadRequest();
+            }
+
+            //if (result.IsNotAllowed)
+            //{
+            //    return StatusCode(500, "Your mail is not confirmed!");
+            //}
+
+            var jwtService = new JwtService(configuration);
+            string accessToken = jwtService.GenerateAccessToken(appUser);
+            string refreshToken = jwtService.GenerateRefreshToken();
+
+            appUser.RefreshToken = refreshToken;
+            await userManager.UpdateAsync(appUser);
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.Now.AddHours(1),
+                Domain="localhost",
+                Path="/"
+            };
+
+            Response.Cookies.Append("access_token", accessToken, cookieOptions);
+            Response.Cookies.Append("refresh_token", refreshToken, cookieOptions);
+
+            return Ok(
+            new
+            {
+                TokenType = "Bearer",
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetUser(LoginDto loginReq, CancellationToken cancellationToken)
+        {
+            return Ok();
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> Admin()
         {
@@ -124,61 +207,12 @@ namespace ChatAppBackend.Controllers
             return NoContent();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Login(LoginDto request, CancellationToken cancellationToken)
-        {
-            AppUser? appUser = await userManager.Users.FirstOrDefaultAsync(p => p.Email == request.UserNameOrEmail || p.UserName == request.UserNameOrEmail, cancellationToken);
-
-            if (appUser is null)
-            {
-                return BadRequest();
-            }
-
-            SignInResult result = await signInManager.CheckPasswordSignInAsync(appUser, request.Password, false);
-
-            if (result.IsLockedOut)
-            {
-                TimeSpan? timeSpan = appUser.LockoutEnd - DateTime.Now;
-                return StatusCode(500, $"Your user has been locked for {(timeSpan?.TotalSeconds ?? 30)} seconds because you entered your password incorrectly 3 times.");
-            }
-            bool isPasswordCorrect = await userManager.CheckPasswordAsync(appUser, request.Password);
-
-            //if (!result.Succeeded)
-            //{
-            //    return StatusCode(500, result);
-            //}
-
-            if (!isPasswordCorrect)
-            {
-                return BadRequest();
-            }
-
-            //if (result.IsNotAllowed)
-            //{
-            //    return StatusCode(500, "Your mail is not confirmed!");
-            //}
-
-            var jwtService = new JwtService(configuration);
-            string accessToken = jwtService.GenerateAccessToken(appUser);
-            string refreshToken = jwtService.GenerateRefreshToken();
-            int expiresIn = 60 * 24;
-
-            appUser.RefreshToken = refreshToken;
-            await userManager.UpdateAsync(appUser);
-
-            return Ok(new
-            {
-                TokenType = "Bearer",
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                expiresIn
-            });
-        }
+ 
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> GetUserByToken()
+        public async Task<IActionResult> GetUserByTokenAsync()
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
             {
                 return Unauthorized();

@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ChatAppBackend.Data
+namespace ChatAppBackend.Services
 {
     public class JwtService
     {
@@ -38,10 +38,32 @@ namespace ChatAppBackend.Data
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        public ClaimsPrincipal ValidateJwtToken(string jwtToken)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"]));
+
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var claimsPrincipal = tokenHandler.ValidateToken(jwtToken, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = _configuration["Jwt:Issuer"],
+                    ValidAudience = _configuration["Jwt:audience"],
+                    IssuerSigningKey = key
+                }, out SecurityToken validatedToken);
+                return claimsPrincipal;
+            }
+            catch (SecurityTokenExpiredException)
+            {
+                throw new ApplicationException("Token has expired");
+            }
+        }
+
         public string GenerateRefreshToken()
         {
             var randomRumber = new byte[32];
-            using(var rng = RandomNumberGenerator.Create())
+            using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(randomRumber);
                 return Convert.ToBase64String(randomRumber);

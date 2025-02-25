@@ -4,8 +4,6 @@
         Guid Id,
         string Name,
         Guid Creator_Id,
-        Boolean isPublic,
-        DateTime Create_Date,
-        int UserCount,
-        int OnlineUserCount);
+        DateTime Create_Date
+        );
 }

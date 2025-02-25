@@ -1,9 +1,14 @@
 using ChatAppBackend.Data;
 using ChatAppBackend.Hubs;
+using ChatAppBackend.Middlewares;
 using ChatAppBackend.Models;
 using ChatAppBackend.Repositories;
+using ChatAppBackend.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -21,11 +26,7 @@ namespace ChatAppBackend
             var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]);
 
             builder.Services.AddControllers();
-            //AddJsonOptions(options =>
-            //{
-            //    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-            //    options.JsonSerializerOptions.WriteIndented = true;
-            //});
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
@@ -37,10 +38,21 @@ namespace ChatAppBackend
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
+            builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+            {
+                options.Level = System.IO.Compression.CompressionLevel.Fastest;
+            });
+            builder.Services.AddResponseCompression(options =>
+            {
+                options.Providers.Add<GzipCompressionProvider>();
+                options.EnableForHttps = true;
+            });
+
             builder.Services.AddScoped<IChatRepository, ChatRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserChatRepository, UserChatRepository>();
             builder.Services.AddScoped<IChannelRepository, ChannelRepository>();
+            builder.Services.AddScoped<JwtService>();
 
             builder.Services.AddAuthentication(options =>
             {
@@ -49,7 +61,7 @@ namespace ChatAppBackend
             })
             .AddJwtBearer(options =>
             {
-                options.RequireHttpsMetadata = false;
+                options.RequireHttpsMetadata = true;
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -62,14 +74,10 @@ namespace ChatAppBackend
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 };     
             });
-
+            
 
             builder.Services.AddAuthorization(
-            //    (options =>
-            //{
-            //    options.AddPolicy("View Projects",
-            //        policy => policy.RequireClaim(CustomClaimTypes.Permission, "projects.view"));
-            //}
+
             );
 
             builder.Services.AddIdentity<AppUser, AppRole>(options =>
@@ -92,7 +100,7 @@ namespace ChatAppBackend
                 options.AddPolicy("AllowAll",
                     policy =>
                     {
-                        policy.WithOrigins("http://localhost:4200")
+                        policy.WithOrigins("https://localhost:4200")
                               .AllowAnyHeader()
                               .AllowAnyMethod()
                               //.AllowAnyOrigin();
@@ -111,18 +119,25 @@ namespace ChatAppBackend
                 app.UseSwaggerUI(c =>
                 {
                     //c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                    //c.RoutePrefix = ""; // Root URL'de açýlmasý için boþ býrak
+                    //c.RoutePrefix = "";
                 });
             }
+
+            
 
             app.UseHttpsRedirection();
 
             app.UseAuthentication();
+            app.UseRouting();
+
+            app.UseMiddleware<JwtMiddleware>();
             app.UseAuthorization();
 
             app.UseCors("AllowAll");
 
             app.UseStaticFiles();
+
+            app.UseResponseCompression();
 
             app.MapControllers();
             app.MapHub<ChatHub>("/chat-hub");

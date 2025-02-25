@@ -46,11 +46,11 @@ namespace ChatAppBackend.Controllers
 
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> GetChats(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetChatsAsync(Guid channelId, CancellationToken cancellationToken)
         {
             var userId = new Guid(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
 
-            var chats = await userChatRepository.GetUserChatsAsync(userId);
+            var chats = await chatRepository.GetChatsAsync(channelId);
 
             return Ok(chats.OrderBy(chat=>chat.Name).ToList());
         }
@@ -180,7 +180,7 @@ namespace ChatAppBackend.Controllers
 
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> GetMessages(Guid chatId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetMessagesAsync(Guid chatId, CancellationToken cancellationToken)
         {
             IEnumerable<AppMessage> messages = await chatRepository.GetMessagesByChatIdAsync(chatId);
             return Ok(messages.OrderBy(message => message.Send_Date).ToList());

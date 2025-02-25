@@ -56,6 +56,17 @@ namespace ChatAppBackend.Repositories
             return await _context.Chats.FindAsync(Id);
         }
 
+        public Task<List<ChatDto>> GetChatsAsync(Guid channelId)
+        {
+            var chats = _context.ChannelChat.Where(cc => cc.ChannelId == channelId)
+                .Select(cc => new ChatDto(
+                    cc.Chat.Id,
+                    cc.Chat.Name,
+                    cc.Chat.Creator_Id,
+                    cc.Chat.Create_Date)).ToListAsync();
+            return chats;
+        }
+
         public async Task<IEnumerable<AppMessage>> GetMessagesByChatIdAsync(Guid chatId)
         {
             AppChat? chat = await _context.Chats.FindAsync(chatId);

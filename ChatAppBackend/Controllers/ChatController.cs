@@ -14,7 +14,7 @@ namespace ChatAppBackend.Controllers
 
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public class ChatController(IHubContext<ChatHub> hubContext, IChatRepository chatRepository, IUserRepository userRepository, IUserChatRepository userChatRepository) : ControllerBase
+    public class ChatController(IHubContext<ChatHub> hubContext, IChatRepository chatRepository, IUserRepository userRepository, IUserChatRepository userChatRepository, IChannelRepository channelRepository) : ControllerBase
     {
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -104,10 +104,10 @@ namespace ChatAppBackend.Controllers
                 FileSize = sendMessageDto.FileSize,
                 FileUrl = sendMessageDto.FileUrl,
             };
-
-            string[] filenames = sendMessageDto.FileUrl.Split(".");
-            Console.WriteLine("FILENAME"+filenames[filenames.Length-1]);
-            List<string> imageExtensions = new List<string>
+            if (!string.IsNullOrEmpty(sendMessageDto.FileUrl))
+            {
+                string[] filenames = sendMessageDto.FileUrl.Split(".");
+                List<string> imageExtensions = new List<string>
             {
                 "jpg",
                 "jpeg",
@@ -121,27 +121,31 @@ namespace ChatAppBackend.Controllers
                 "heic",
                 "ico"
             };
-            if (imageExtensions.Contains(filenames[filenames.Length - 1]))
-            {
-                message.MessageType = "image";
+                if (imageExtensions.Contains(filenames[filenames.Length - 1]))
+                {
+                    message.MessageType = "image";
+                }
+
             }
 
             AppMessage createdMessage = await chatRepository.CreateMessageAsync(message);
 
-            //IEnumerable<UserDto> users = await userChatRepository.GetUsersFromChatAsync(createdMessage.Chat_Id);
+            ChannelDto channel = await channelRepository.GetChannelByChatIdAsync(message.Chat_Id);
 
-            //foreach(var user in users)
-            //{
-            //    if(user.Id == new Guid(userId))
-            //    {
-            //        continue;
-            //    }
-            //    string memberConnectionId = ChatHub.ConnectedUsers.FirstOrDefault(x => x.Value == user.Id).Key;
-            //    if(memberConnectionId != null)
-            //    {
-            //        await hubContext.Clients.Client(memberConnectionId).SendAsync("ReceiveMessage", createdMessage);
-            //    }
-            //}
+            List<UserDto> users = await channelRepository.GetUsersByChannelIdAsync(channel.Id);
+
+            foreach (var user in users)
+            {
+                if (user.Id == new Guid(userId))
+                {
+                    continue;
+                }
+                string memberConnectionId = ChatHub.ConnectedUsers.FirstOrDefault(x => x.Value == user.Id).Key;
+                if (memberConnectionId != null)
+                {
+                    await hubContext.Clients.Client(memberConnectionId).SendAsync("ReceiveMessage", createdMessage);
+                }
+            }
 
             return Ok(createdMessage);
         }
@@ -180,10 +184,16 @@ namespace ChatAppBackend.Controllers
 
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> GetMessagesAsync(Guid chatId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetMessagesAsync(Guid chatId, DateTime? lastMessageDate, CancellationToken cancellationToken)
         {
-            IEnumerable<AppMessage> messages = await chatRepository.GetMessagesByChatIdAsync(chatId);
-            return Ok(messages.OrderBy(message => message.Send_Date).ToList());
+            IEnumerable<AppMessage> messages = await chatRepository.GetMessagesByChatIdAsync(chatId, lastMessageDate);
+
+            if(messages.ToList().Count == 0)
+            {
+                return NoContent();
+            }
+
+            return Ok(messages);
         }
 
         //[HttpPost]

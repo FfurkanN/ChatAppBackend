@@ -25,6 +25,7 @@
   <ItemGroup>
     <Folder Include="wwwroot\images\" />
     <Folder Include="wwwroot\chat-files\" />
+    <Folder Include="wwwroot\channel_profile_images\" />
     <Folder Include="wwwroot\profile_images\" />
     <Folder Include="wwwroot\videos\" />
   </ItemGroup>

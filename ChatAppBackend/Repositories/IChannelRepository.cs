@@ -10,7 +10,9 @@ namespace ChatAppBackend.Repositories
         public Task<AppChannel> UpdateChannelAsync(AppChannel channel);
         public Task<AppChannel> DeleteChannelAsync(Guid id);
         public Task<UserChannelDto> AddUserToChannelAsync(UserChannelDto userChannelDto);
+        public Task<List<UserDto>> GetUsersByChannelIdAsync(Guid id);
         public Task<int> GetUserCountAsync(Guid id);
         public Task<int> GetOnlineUserCountAsync(Guid chatId);
+        public Task<ChannelDto> GetChannelByChatIdAsync(Guid chatId);
     }
 }

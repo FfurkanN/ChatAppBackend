@@ -39,18 +39,24 @@ namespace ChatAppBackend.Controllers
             appUser.RefreshToken = refreshToken;
             await userManager.UpdateAsync(appUser);
 
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                Expires = DateTime.Now.AddHours(1),
-                Domain = "localhost",
-                Path = "/"
-            };
-
-            Response.Cookies.Append("access_token", accessToken, cookieOptions);
-            Response.Cookies.Append("refresh_token", refreshToken, cookieOptions);
+            //Response.Cookies.Append("access_token", accessToken, new CookieOptions
+            //{
+            //    HttpOnly = true,
+            //    Secure = true,
+            //    SameSite = SameSiteMode.None,
+            //    Expires = DateTime.Now.AddHours(1),
+            //    Domain = "localhost",
+            //    Path = "/"
+            //});
+            //Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
+            //{
+            //    HttpOnly = true,
+            //    Secure = true,
+            //    SameSite = SameSiteMode.None,
+            //    Expires = DateTime.Now.AddDays(1),
+            //    Domain = "localhost",
+            //    Path = "/"
+            //});
 
             return Ok(new
             {
@@ -103,18 +109,25 @@ namespace ChatAppBackend.Controllers
             appUser.RefreshToken = refreshToken;
             await userManager.UpdateAsync(appUser);
 
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                Expires = DateTime.Now.AddHours(1),
-                Domain="localhost",
-                Path="/"
-            };
 
-            Response.Cookies.Append("access_token", accessToken, cookieOptions);
-            Response.Cookies.Append("refresh_token", refreshToken, cookieOptions);
+            //Response.Cookies.Append("access_token", accessToken, new CookieOptions
+            //{
+            //    HttpOnly = true,
+            //    Secure = true,
+            //    SameSite = SameSiteMode.None,
+            //    Expires = DateTime.Now.AddHours(1),
+            //    Domain = "localhost",
+            //    Path = "/"
+            //});
+            //Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
+            //{
+            //    HttpOnly=true,
+            //    Secure = true,
+            //    SameSite=SameSiteMode.None,
+            //    Expires=DateTime.Now.AddDays(1),
+            //    Domain="localhost",
+            //    Path="/"
+            //});
 
             return Ok(
             new
@@ -123,12 +136,6 @@ namespace ChatAppBackend.Controllers
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             });
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> GetUser(LoginDto loginReq, CancellationToken cancellationToken)
-        {
-            return Ok();
         }
 
 

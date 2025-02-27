@@ -38,8 +38,8 @@ namespace ChatAppBackend.Repositories
                 (
                 c.Channel.Id,
                 c.Channel.Name,
-                c.Channel.Description,
                 c.Channel.ChannelImageUrl,
+                c.Channel.Description,
                 c.Channel.Creator_Id,
                 c.Channel.Create_Date,
                 c.Channel.isPublic
@@ -55,8 +55,8 @@ namespace ChatAppBackend.Repositories
                (
                c.Id,
                c.Name,
-               c.Description,
                c.ChannelImageUrl,
+               c.Description,
                c.Creator_Id,
                c.Create_Date,
                c.isPublic
@@ -80,7 +80,12 @@ namespace ChatAppBackend.Repositories
            return await _context.Users.FindAsync(username);
         }
 
-        
+        public async Task<AppUser?> GetUserByRefreshToken(string refreshToken)
+        {
+            return await _context.Users.FirstOrDefaultAsync(x => x.RefreshToken == refreshToken);
+        }
+
+
 
     }
 

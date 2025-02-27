@@ -37,6 +37,10 @@ namespace ChatAppBackend.Data
                 .HasOne(cc => cc.Channel)
                 .WithMany(c =>c.ChannelChats);
 
+            builder.Entity<AppChatMessage>()
+                .HasOne(cm => cm.Chat)
+                .WithMany(c => c.ChatMessage);
+
             base.OnModelCreating(builder);
         }
 

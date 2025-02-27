@@ -67,27 +67,32 @@ namespace ChatAppBackend.Repositories
             return chats;
         }
 
-        public async Task<IEnumerable<AppMessage>> GetMessagesByChatIdAsync(Guid chatId)
+        public async Task<IEnumerable<AppMessage>> GetMessagesByChatIdAsync(Guid chatId, DateTime? lastMessageDate)
         {
             AppChat? chat = await _context.Chats.FindAsync(chatId);
 
             if (chat == null)
                 throw new KeyNotFoundException("Chat not found");
 
-
-            List<AppChatMessage> chatMessages = await _context.ChatMessages.Where(m=> m.ChatId == chatId).ToListAsync();
-
             List<AppMessage> messages = new List<AppMessage>();
-
-            foreach (var chatMessage in chatMessages)
+            if (lastMessageDate.HasValue)
             {
-                AppMessage? message = await _context.Messages.FindAsync(chatMessage.MessageId);
-                if (message == null)
-                    throw new KeyNotFoundException("Message not found");
-                messages.Add(message);
+               messages = await _context.ChatMessages.Where(m => m.ChatId == chatId && m.Message.Send_Date < lastMessageDate.Value)
+                    .OrderByDescending(m => m.Message.Send_Date)
+                    .Take(50)
+                    .Select(m => m.Message)
+                    .ToListAsync();
+            }
+            else
+            {
+               messages = await _context.ChatMessages.Where(m => m.ChatId == chatId)
+                   .OrderByDescending(m => m.Message.Send_Date)
+                   .Take(50)
+                   .Select(m => m.Message)
+                   .ToListAsync();
             }
 
-            return messages.OrderBy(m=> m.Send_Date);
+            return messages;
         }
 
         public async Task<AppChat> UpdateChat(AppChat chat)

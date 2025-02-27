@@ -9,6 +9,9 @@
 *.rsuser
 *.sln.cache
 
+# wwwroot klasörünü Git'e dahil etme
+/wwwroot/
+
 # Bin ve obj klasörleri (Derlenmiş dosyalar)
 bin/
 obj/
@@ -43,9 +46,6 @@ logs/
 packages/
 package-lock.json
 yarn.lock
-
-
-
 
 # Docker ve konteyner dosyaları
 docker-compose.override.yml
@@ -84,4 +84,14 @@ __pycache__/
 ._*
 .Trashes
 *.swp
-/ChatAppBackend/appsettings.json
+
+# .NET Core ile ilgili geçici dosyalar
+.vscode/
+.vsconfig
+.vscode/
+
+# IntelliJ, JetBrains ve Rider ile ilgili dosyalar
+.idea/
+
+# .NET CLI Cache
+.nuget/

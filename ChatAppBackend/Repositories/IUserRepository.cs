@@ -1,7 +1,6 @@
 ﻿
 using ChatAppBackend.Dtos;
 using ChatAppBackend.Models;
-using Microsoft.AspNetCore.Identity;
 
 namespace ChatAppBackend.Repositories
 {
@@ -12,5 +11,6 @@ namespace ChatAppBackend.Repositories
         public Task<AppUser?> ChangeUserStatus(AppUser user, bool isOnline);
         public Task<List<ChannelDto>> GetChannelsAsync(Guid id);
         public Task<List<ChannelDto>> GetOwnedChannelsAsync(Guid id);
+        public Task<AppUser> GetUserByRefreshToken(string refreshToken);
     }
 }

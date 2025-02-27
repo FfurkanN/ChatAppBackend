@@ -3,8 +3,8 @@
     public sealed record SendMessageDto(
         Guid ChatId,
         string Content,
-        string FileName,
-        string FileUrl,
-        long FileSize
+        string? FileName,
+        string? FileUrl,
+        long? FileSize
         );
 }

@@ -61,7 +61,7 @@ namespace ChatAppBackend
             })
             .AddJwtBearer(options =>
             {
-                options.RequireHttpsMetadata = true;
+                options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -76,9 +76,7 @@ namespace ChatAppBackend
             });
             
 
-            builder.Services.AddAuthorization(
-
-            );
+            builder.Services.AddAuthorization();
 
             builder.Services.AddIdentity<AppUser, AppRole>(options =>
             {
@@ -100,7 +98,7 @@ namespace ChatAppBackend
                 options.AddPolicy("AllowAll",
                     policy =>
                     {
-                        policy.WithOrigins("https://localhost:4200")
+                        policy.WithOrigins("http://localhost:4200")
                               .AllowAnyHeader()
                               .AllowAnyMethod()
                               //.AllowAnyOrigin();

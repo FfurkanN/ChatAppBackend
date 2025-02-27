@@ -61,6 +61,17 @@ namespace ChatAppBackend.Controllers
             return Ok(userChannel);
         }
 
+        [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> GetUsersByChannelIdAsync(Guid channelId, CancellationToken cancellationToken)
+        {
+            var users = await channelRepository.GetUsersByChannelIdAsync(channelId);
+            if(users == null)
+            {
+                return BadRequest();
+            }
+            return Ok(users);
+        }
 
     }
 }

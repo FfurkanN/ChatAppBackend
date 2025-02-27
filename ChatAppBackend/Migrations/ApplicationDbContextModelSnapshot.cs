@@ -118,6 +118,8 @@ namespace ChatAppBackend.Migrations
 
                     b.HasKey("ChatId", "MessageId");
 
+                    b.HasIndex("MessageId");
+
                     b.ToTable("ChatMessages");
                 });
 
@@ -415,6 +417,25 @@ namespace ChatAppBackend.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("ChatAppBackend.Models.AppChatMessage", b =>
+                {
+                    b.HasOne("ChatAppBackend.Models.AppChat", "Chat")
+                        .WithMany("ChatMessage")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ChatAppBackend.Models.AppMessage", "Message")
+                        .WithMany()
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("Message");
+                });
+
             modelBuilder.Entity("ChatAppBackend.Models.AppUserRole", b =>
                 {
                     b.HasOne("ChatAppBackend.Models.AppRole", null)
@@ -471,6 +492,11 @@ namespace ChatAppBackend.Migrations
                     b.Navigation("ChannelChats");
 
                     b.Navigation("ChannelUser");
+                });
+
+            modelBuilder.Entity("ChatAppBackend.Models.AppChat", b =>
+                {
+                    b.Navigation("ChatMessage");
                 });
 
             modelBuilder.Entity("ChatAppBackend.Models.AppUser", b =>

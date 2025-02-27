@@ -11,6 +11,6 @@ namespace ChatAppBackend.Repositories
         Task<AppChat> DeleteChatAsync(Guid Id);
         Task<AppChat> UpdateChat(AppChat chat);
         Task<AppMessage> CreateMessageAsync(AppMessage message);
-        Task<IEnumerable<AppMessage>> GetMessagesByChatIdAsync(Guid chatId);
+        Task<IEnumerable<AppMessage>> GetMessagesByChatIdAsync(Guid chatId, DateTime? lastMessageDate);
     }
 }

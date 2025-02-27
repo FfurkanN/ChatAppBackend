@@ -18,5 +18,7 @@ namespace ChatAppBackend.Models
         public Guid Creator_Id { get; set; }
         public DateTime Create_Date { get; set; } = DateTime.Now;
 
+        public ICollection<AppChatMessage> ChatMessage { get; set; }
+
     }
 }

@@ -10,7 +10,7 @@
 *.sln.cache
 
 # wwwroot klasörünü Git'e dahil etme
-/wwwroot/
+/ChatAppBackend/wwwroot/
 
 # Bin ve obj klasörleri (Derlenmiş dosyalar)
 bin/

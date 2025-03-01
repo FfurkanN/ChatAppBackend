@@ -90,7 +90,10 @@ namespace ChatAppBackend.Repositories
                 (
                     cu.User.Id,
                     cu.User.UserName,
-                    cu.User.Fullname,
+                    cu.User.Firstname,
+                    cu.User.Lastname,
+                    cu.User.About,
+                    cu.User.Email,
                     cu.User.isOnline,
                     cu.User.ProfileImageUrl
                 )).ToListAsync();

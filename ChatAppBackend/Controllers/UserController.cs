@@ -26,6 +26,7 @@ namespace ChatAppBackend.Controllers
         }
 
         [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetUserByUsername(string username, CancellationToken cancellationToken)
         {
             AppUser? user = await _userManager.FindByNameAsync(username);
@@ -36,7 +37,20 @@ namespace ChatAppBackend.Controllers
             return Ok(user);
         }
 
+        [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> UsernameAvaliable(string username, CancellationToken cancellationToken)
+        {
+            AppUser? user = await _userManager.FindByNameAsync(username);
+            if(user == null)
+            {
+                return Ok(new {avaliable=true});
+            }
+            return BadRequest();
+        }
+
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetUserByIdAsync(string[] usersId, CancellationToken cancellationToken)
         {
             List<AppUser> users = new List<AppUser>();
@@ -73,6 +87,31 @@ namespace ChatAppBackend.Controllers
             IEnumerable<ChannelDto> channels = await _userRepository.GetChannelsAsync(userId);
 
             return Ok(channels);
+        }
+        [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> UpdateUserAsync(UserDto user, CancellationToken cancellationToken)
+        {
+            var userId = new Guid(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+
+            if (!userId.Equals(user.Id))
+            {
+                return BadRequest();
+            }
+
+            AppUser userInDb = await _userManager.FindByIdAsync(userId.ToString());
+            userInDb.UserName = user.UserName;
+            userInDb.Firstname = user.FirstName;
+            userInDb.Lastname = user.LastName;
+            userInDb.Email = user.Email;
+            userInDb.About = user.About;
+
+            IdentityResult result = await _userManager.UpdateAsync(userInDb);
+            if(result.Succeeded)
+            {
+                return Ok(userInDb);
+            }
+            return StatusCode(500, result);
         }
 
         //[HttpGet]

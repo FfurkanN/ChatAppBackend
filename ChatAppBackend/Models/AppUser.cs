@@ -11,6 +11,7 @@ namespace ChatAppBackend.Models
         public string ProfileImageUrl { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;
         public bool isOnline { get; set; } = false;
+        public string About { get; set; } = string.Empty;
 
         [JsonIgnore]
         public ICollection<AppChannelUser> ChannelUser { get; set; }
